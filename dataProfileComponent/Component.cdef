@@ -1,0 +1,13 @@
+sources:
+{
+	dataProfileComponent.c
+}
+
+requires:
+{
+    api:
+    {
+        le_data.api
+        le_mdc.api
+    }
+}

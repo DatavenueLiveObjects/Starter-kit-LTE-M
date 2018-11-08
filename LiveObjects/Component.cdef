@@ -1,0 +1,14 @@
+sources:
+{
+	LiveObjects.c
+	swir_json.c
+}
+
+requires:
+{
+    api:
+    {
+        $CURDIR/../../mqttClient/mqttClient.api
+        le_data.api
+    }
+}

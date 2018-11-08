@@ -1,0 +1,37 @@
+executables:
+{
+	OrangeStarterKit = ( OrangeStarterKitComponent dataProfileComponent LiveObjects)
+}
+
+processes:
+{
+	envVars:
+	{
+		LE_LOG_LEVEL = DEBUG
+	}
+
+	run:
+	{
+		( OrangeStarterKit )
+	}
+
+	maxCoreDumpFileBytes: 512K
+	maxFileBytes: 512K
+}
+
+version: 1.0.0
+maxFileSystemBytes: 512K
+
+
+bindings:
+{
+    OrangeStarterKit.LiveObjects.mqttClient 				-> mqttClient.mqttClient
+    OrangeStarterKit.LiveObjects.le_data 					-> dataConnectionService.le_data
+    OrangeStarterKit.dataProfileComponent.le_data 			-> dataConnectionService.le_data
+    OrangeStarterKit.dataProfileComponent.le_mdc 			-> modemService.le_mdc
+    OrangeStarterKit.OrangeStarterKitComponent.le_mdc 		-> modemService.le_mdc
+    OrangeStarterKit.OrangeStarterKitComponent.le_info 		-> modemService.le_info  
+ 	OrangeStarterKit.OrangeStarterKitComponent.ma_led 		-> ledService.ma_led
+ 	
+ 	OrangeStarterKit.OrangeStarterKitComponent.le_adc		-> modemService.le_adc
+}
