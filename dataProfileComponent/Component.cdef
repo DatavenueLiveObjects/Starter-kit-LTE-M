@@ -8,6 +8,6 @@ requires:
     api:
     {
         le_data.api
-        le_mdc.api
+        modemServices/le_mdc.api
     }
 }

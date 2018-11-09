@@ -8,7 +8,7 @@ requires:
 {
     api:
     {
-        $CURDIR/../../mqttClient/mqttClient.api
+        ../mqttClient-for-Legato/mqttClient/mqttClientApi/mqttClient.api
         le_data.api
     }
 }

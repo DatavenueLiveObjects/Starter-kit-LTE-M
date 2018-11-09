@@ -2,7 +2,7 @@ sources:
 {
 	OrangeStarterKitComponent.c
 	swir_json.c
-sensorUtils.c
+	sensorUtils.c
 }
 
 cflags:
@@ -15,13 +15,13 @@ requires:
 {
 	api:
 	{
-		le_mdc = le_mdc.api 
-		
-		le_info = le_info.api
-		
-		le_adc = modemServices/le_adc.api 
-		
-		ma_led = $CURDIR/../../../mangOH/apps/LedService/ma_led.api
+		le_mdc = modemServices/le_mdc.api 
+        
+        le_info = modemServices/le_info.api 
+        
+        le_adc = modemServices/le_adc.api 
+        
+        ma_led = /home/mangoh/mangOH/apps/LedService/ma_led.api
 	}
 	
 	  file:
