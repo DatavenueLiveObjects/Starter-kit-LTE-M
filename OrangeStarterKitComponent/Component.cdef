@@ -15,8 +15,13 @@ requires:
 {
 	api:
 	{
-		le_mdc = le_mdc.api le_info =
-                le_info.api le_adc = modemServices/le_adc.api ma_led = $CURDIR/../../../mangOH/apps/LedService/ma_led.api
+		le_mdc = le_mdc.api 
+		
+		le_info = le_info.api
+		
+		le_adc = modemServices/le_adc.api 
+		
+		ma_led = $CURDIR/../../../mangOH/apps/LedService/ma_led.api
 	}
 	
 	  file:
