@@ -31,7 +31,7 @@ static bool LedOn;
  * Live Objects Settings
  */
 
-char* APIKEY =  "00000000000000000000000000000000"; //a valid API key value
+char* APIKEY =  "6b42265e533c40bc8b234a9f4e289097"; //a valid API key value
 
 char* NAMESPACE = "starterkit"; //device identifier namespace (device model, identifier class...)
 char imei[20]; //device identifier (IMEI, Serial Number, MAC adress...)
@@ -53,8 +53,9 @@ int											_dataProfileIndex = 1;
 
 int count = 0;
 
-static const char PressureFile[] = "/sys/devices/78b8000.i2c/i2c-4/4-0076/iio:device1/in_pressure_input";
-static const char TemperatureFile[] = "/sys/devices/78b8000.i2c/i2c-4/4-0076/iio:device1/in_temp_input";
+static const char PressureFile[] = "/sys/devices/i2c-0/0-0076/iio:device1/in_pressure_input";
+static const char TemperatureFile[] = "/sys/devices/i2c-0/0-0076/iio:device1/in_temp_input";
+
 
 /**
  * Reports the pressure kPa.
@@ -166,7 +167,6 @@ static void sendCommandResultStatus
 	char payload[100] = "{\"hello\":\"world\"}";
 
     liveobjects_pubData(cmdResultStreamID, payload, model, tags, latitude, longitude);
-
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -196,8 +196,6 @@ static void  command(
 	char result[256] = "true";
 	liveobjects_pubCmdRes(result, cid);
 }
-
-
 
 //--------------------------------------------------------------------------------------------------
 /**
@@ -346,7 +344,7 @@ void demoTimer()
 
     result = mangOH_ReadTemperatureSensor(&temperature);
     if(mangOH_ReadTemperatureSensor(&temperature) == LE_OK) {
-    	sprintf(temperatureStr, ",\"temp\":%lf", pressure);
+    	sprintf(temperatureStr, ",\"temp\":%lf", temperature);
     }
     else {
        	LE_INFO("temperature error %d", result);
