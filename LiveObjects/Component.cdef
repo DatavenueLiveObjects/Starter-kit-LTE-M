@@ -8,7 +8,7 @@ requires:
 {
     api:
     {
-        ../mqttClient-for-Legato/mqttClient/mqttClientApi/mqttClient.api
+        ../mqttClient-for-Legato/mqttClientApi/mqttClient.api
         le_data.api
     }
 }
