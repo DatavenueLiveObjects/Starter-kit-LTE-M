@@ -31,7 +31,7 @@ static bool LedOn;
  * Live Objects Settings
  */
 
-char* APIKEY =  "6b42265e533c40bc8b234a9f4e289097"; //a valid API key value
+char* APIKEY =  "000000000000000000000000000000000"; //a valid API key value
 
 char* NAMESPACE = "starterkit"; //device identifier namespace (device model, identifier class...)
 char imei[20]; //device identifier (IMEI, Serial Number, MAC adress...)
