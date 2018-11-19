@@ -1,6 +1,8 @@
+sandboxed: false
+
 executables:
 {
-	OrangeStarterKit = ( OrangeStarterKitComponent dataProfileComponent LiveObjects)
+	OrangeStarterKit = ( OrangeStarterKitComponent dataProfileComponent LiveObjects GNSSComponent)
 }
 
 processes:
@@ -22,16 +24,25 @@ processes:
 version: 1.0.0
 maxFileSystemBytes: 512K
 
+start: auto
 
 bindings:
 {
+    OrangeStarterKit.GNSSComponent.le_pos                   -> positioningService.le_pos
+    OrangeStarterKit.GNSSComponent.le_posCtrl               -> positioningService.le_posCtrl
+    
     OrangeStarterKit.LiveObjects.mqttClient 				-> mqttClient.mqttClient
     OrangeStarterKit.LiveObjects.le_data 					-> dataConnectionService.le_data
+    
     OrangeStarterKit.dataProfileComponent.le_data 			-> dataConnectionService.le_data
     OrangeStarterKit.dataProfileComponent.le_mdc 			-> modemService.le_mdc
+    
+    OrangeStarterKit.OrangeStarterKitComponent.le_mrc             -> modemService.le_mrc
+    
     OrangeStarterKit.OrangeStarterKitComponent.le_mdc 		-> modemService.le_mdc
-    OrangeStarterKit.OrangeStarterKitComponent.le_info 		-> modemService.le_info  
- 	OrangeStarterKit.OrangeStarterKitComponent.ma_led 		-> ledService.ma_led
- 	
+    OrangeStarterKit.OrangeStarterKitComponent.le_info 		-> modemService.le_info   	
+    OrangeStarterKit.OrangeStarterKitComponent.ma_led 		-> ledService.ma_led
  	OrangeStarterKit.OrangeStarterKitComponent.le_adc		-> modemService.le_adc
+
+    
 }

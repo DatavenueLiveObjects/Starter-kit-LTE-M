@@ -10,28 +10,21 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "legato.h"
-
-#include "../OrangeStarterKitComponent/inc-gen/interfaces.h"
-#include "../OrangeStarterKitComponent/swir_json.h"
+#include "interfaces.h"
+#include "swir_json.h"
 #include "LiveObjects.h"
+#include "GNSSComponent.h"
 #include "dataProfileComponent.h"
 #include "sensorUtils.h"
 
 #define DATA_TIMER_IN_MS (60000)
-
-static le_timer_Ref_t dataPubTimerRef;
-
-int latitude = 0;
-int longitude = 0;
-
-static bool LedOn;
 
 //-----
 /**
  * Live Objects Settings
  */
 
-char* APIKEY =  "000000000000000000000000000000000"; //a valid API key value
+char* APIKEY =  "000000000000000000000000000000"; //a valid API key value
 
 char* NAMESPACE = "starterkit"; //device identifier namespace (device model, identifier class...)
 char imei[20]; //device identifier (IMEI, Serial Number, MAC adress...)
@@ -48,13 +41,33 @@ char                                        _profileAPN[] = "orange.ltem.spec";
 char                                        _profileUser[] = "orange";
 char                                        _profilePwd[] = "orange";
 le_mdc_Auth_t                               _profileAuth = LE_MDC_AUTH_PAP;
-int											_dataProfileIndex = 1;
+int				                            _dataProfileIndex = 1;
 
+static le_timer_Ref_t dataPubTimerRef;
+
+double latitude = 0;
+double longitude = 0;
+
+static bool LedOn;
+
+//-----
+/**
+ * GNSS
+ */
+
+/*static le_posCtrl_ActivationRef_t           _posCtrlRef = NULL;
+
+typedef enum
+{
+    POSITION_LOCATION_NO = 0,
+    POSITION_LOCATION_2D = 1,
+    POSITION_LOCATION_3D =2
+} position_location_type_t;*/
 
 int count = 0;
 
-static const char PressureFile[] = "/sys/devices/i2c-0/0-0076/iio:device1/in_pressure_input";
-static const char TemperatureFile[] = "/sys/devices/i2c-0/0-0076/iio:device1/in_temp_input";
+static const char PressureFile[]    = "/sys/bus/i2c/devices/4-0076/iio:device1/in_pressure_input";
+static const char TemperatureFile[]   = "/sys/bus/i2c/devices/4-0076/iio:device1/in_temp_input";
 
 
 /**
@@ -313,49 +326,103 @@ static void OnIncomingMessage(
 
 //--------------------------------------------------------------------------------------------------
 /**
+ *  check connexion
+ *  radio state 
+ *  signal quality
+ *  cellId
+ */
+//--------------------------------------------------------------------------------------------------
+void connexionStatus()
+{
+    
+    le_onoff_t    onoff;
+    le_result_t res = le_mrc_GetRadioPower(&onoff);
+    
+    if (res == LE_OK) {
+        LE_INFO("Power status : %d", onoff);
+    } else {
+        LE_INFO("get radio power failed");
+    }
+        
+    uint32_t sigQual;
+    
+    res = le_mrc_GetSignalQual(&sigQual);
+    if (res == LE_OK) {
+        LE_INFO("Signal Quality : %d", sigQual);
+    } else {
+        LE_INFO("get signal quality failed");
+    }
+    
+    uint32_t cellId = le_mrc_GetServingCellId();
+    LE_INFO("Cellid : %d", cellId);
+    
+}
+
+//--------------------------------------------------------------------------------------------------
+/**
  *  publish data to liveobjects
  */
 //--------------------------------------------------------------------------------------------------
 void demoTimer()
 {
 
-	char* model = "lightV1";
+	char* model = "demo";
 	char* tags = "[\"lightlevel\", \"count\"]";
 	char pressureStr[100] = "";
 	char temperatureStr[100] = "";
-
-	char payload[100] = "";
-
+    char connexionStatusStr[100] = "";
+    char sensorsStr[100] = "";
+	char payload[1024] = "";
+    
+    
     int32_t lightLevel = 0;
     double pressure = 0;
     double temperature = 0;
 
+    count = count + 1;
+    
+    //get sensors values
     LightSensor(&lightLevel);
 
-    le_result_t result;
-    result = mangOH_ReadPressureSensor(&pressure);
-
-    if( result == LE_OK) {
+    if( mangOH_ReadPressureSensor(&pressure) == LE_OK) {
     	sprintf(pressureStr, ",\"pressure\":%lf", pressure);
     }
     else {
-    	LE_INFO("pressure error %d", result);
+    	LE_INFO("pressure error");
     }
 
-    result = mangOH_ReadTemperatureSensor(&temperature);
     if(mangOH_ReadTemperatureSensor(&temperature) == LE_OK) {
     	sprintf(temperatureStr, ",\"temp\":%lf", temperature);
     }
     else {
-       	LE_INFO("temperature error %d", result);
+       	LE_INFO("temperature error");
        }
 
-	sprintf(payload, "{\"count\":%d, \"lightlevel\": %d%s%s}", count, lightLevel, pressureStr, temperatureStr);
+    sprintf(sensorsStr, ", \"s\":{\"lightlevel\": %d%s%s}", lightLevel, pressureStr, temperatureStr);
+    
+    GNSS_get(&latitude, &longitude);
+    
+    //get network signal quality, range : 0-5
+    uint32_t sigQual;
+    if(le_mrc_GetSignalQual(&sigQual) == LE_OK) {
+        sprintf(connexionStatusStr, ",\"n\": {\"q\":%d}", sigQual);
+        
+    }
+    else {
+       	sprintf(connexionStatusStr, ",\"n\": {\"q\":\"fail\"}");
+       }   
 
-	count = count + 1;
-
+    LE_INFO("connexionStatusStr : %s", connexionStatusStr);
+    
+	sprintf(payload, "{\"count\":%d %s%s}", count, sensorsStr,connexionStatusStr);
+    
+    LE_INFO("payload %d : %s", sizeof(payload), payload);
+                
 	liveobjects_pubData(timerStreamID, payload, model, tags, latitude, longitude);
-
+                
+                
+    connexionStatus();
+    
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -389,7 +456,20 @@ void connectionHandler()
 //--------------------------------------------------------------------------------------------------
 COMPONENT_INIT
 {
-	// configure Orange network settings
+	
+    // init sensors
+    GNSS_start(DATA_TIMER_IN_MS);
+    
+	ma_led_LedStatus_t ledStatus  = ma_led_GetLedStatus();
+
+	if (ledStatus == MA_LED_OFF)
+	{
+	    LedOn = false;
+	} else {
+	    LedOn = true;
+	}
+    
+    // configure Orange network settings
 	dataProfile_set(_dataProfileIndex, _profileAPN, _profileAuth, _profileUser, _profilePwd);
 
 	//connect to liveObjects
@@ -407,12 +487,4 @@ COMPONENT_INIT
 
 	LE_INFO("=========================== Starter KIT LTE-M demo application started");
 
-	ma_led_LedStatus_t ledStatus  = ma_led_GetLedStatus();
-
-	if (ledStatus == MA_LED_OFF)
-	{
-	    LedOn = false;
-	} else {
-		LedOn = true;
-	}
 }

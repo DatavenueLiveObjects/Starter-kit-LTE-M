@@ -1,0 +1,18 @@
+sources:
+{
+	GNSSComponent.c
+
+}
+
+
+requires:
+{
+	api:
+	{
+        $LEGATO_ROOT/interfaces/positioning/le_posCtrl.api
+
+        $LEGATO_ROOT/interfaces/positioning/le_pos.api
+	
+	}
+	
+}

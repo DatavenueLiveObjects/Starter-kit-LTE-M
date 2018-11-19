@@ -205,8 +205,8 @@ void liveobjects_pubData
 		char* payload,
 		char* model,
 		char* tags,
-		int latitude,
-		int longitude
+		double latitude,
+		double longitude
 )
 {
 	char* s = swirjson_szSerialize("s", streamid, 0);
@@ -217,12 +217,12 @@ void liveobjects_pubData
 	char* m = swirjson_szSerialize("m", model, 0);
 
 	char loc[30] = "";
-	sprintf(loc, "\"loc\":[%d,%d]", latitude, longitude);
+	sprintf(loc, "\"loc\":[%lf,%lf]", latitude, longitude);
 
 	char t[100] = "";
 	sprintf(t, "\"t\":%s", tags);
 
-	char message[256] = "";
+	char message[1024] = "";
 	sprintf(message, "{%s, %s, %s, %s, %s}", s, m, v, loc, t);
 
 	LE_INFO("Publish data , %s", message);
