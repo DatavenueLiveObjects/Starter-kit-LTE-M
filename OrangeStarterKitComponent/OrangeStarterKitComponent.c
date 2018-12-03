@@ -24,7 +24,13 @@
  * Live Objects Settings
  */
 
-char* APIKEY =  "000000000000000000000000000000"; //a valid API key value
+#define CONFIG_TREE_API_KEY  "/LiveObjects/apiKey"
+
+// set your apikey on the board
+// ssh root@192.168.2.2 '/legato/systems/current/bin/config set /LiveObjects/apiKey <your apikey>'
+
+
+char _apiKey[48] = {0};
 
 char* NAMESPACE = "starterkit"; //device identifier namespace (device model, identifier class...)
 char imei[20]; //device identifier (IMEI, Serial Number, MAC adress...)
@@ -50,29 +56,16 @@ double longitude = 0;
 
 static bool LedOn;
 
-//-----
-/**
- * GNSS
- */
-
-/*static le_posCtrl_ActivationRef_t           _posCtrlRef = NULL;
-
-typedef enum
-{
-    POSITION_LOCATION_NO = 0,
-    POSITION_LOCATION_2D = 1,
-    POSITION_LOCATION_3D =2
-} position_location_type_t;*/
-
 int count = 0;
 
 static const char PressureFile[]    = "/sys/bus/i2c/devices/4-0076/iio:device1/in_pressure_input";
 static const char TemperatureFile[]   = "/sys/bus/i2c/devices/4-0076/iio:device1/in_temp_input";
 
-
+//--------------------------------------------------------------------------------------------------
 /**
  * Reports the pressure kPa.
  */
+//--------------------------------------------------------------------------------------------------
 le_result_t mangOH_ReadPressureSensor
 (
     double *reading
@@ -81,9 +74,11 @@ le_result_t mangOH_ReadPressureSensor
     return ReadDoubleFromFile(PressureFile, reading);
 }
 
+//--------------------------------------------------------------------------------------------------
 /**
  * Reports the temperature in degrees celcius.
  */
+ //--------------------------------------------------------------------------------------------------
 le_result_t mangOH_ReadTemperatureSensor
 (
     double *reading
@@ -241,6 +236,8 @@ static void  configUpdate(
 	LE_INFO("config request update : response  %s / %s / %s", key, type, value);
 
 	liveobjects_pubConfigUpdateResponse(key, type, value,cid);
+    
+    
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -372,7 +369,7 @@ void demoTimer()
 	char temperatureStr[100] = "";
     char connexionStatusStr[100] = "";
     char sensorsStr[100] = "";
-	char payload[1024] = "";
+	char payload[896] = "";
     
     
     int32_t lightLevel = 0;
@@ -398,25 +395,27 @@ void demoTimer()
        	LE_INFO("temperature error");
        }
 
-    sprintf(sensorsStr, ", \"s\":{\"lightlevel\": %d%s%s}", lightLevel, pressureStr, temperatureStr);
+    sprintf(sensorsStr, ", \"sensors\":{\"lightlevel\": %d%s%s}", lightLevel, pressureStr, temperatureStr);
     
     GNSS_get(&latitude, &longitude);
     
     //get network signal quality, range : 0-5
     uint32_t sigQual;
     if(le_mrc_GetSignalQual(&sigQual) == LE_OK) {
-        sprintf(connexionStatusStr, ",\"n\": {\"q\":%d}", sigQual);
+        sprintf(connexionStatusStr, ",\"network\": {\"signalQuality\":%d}", sigQual);
         
     }
     else {
        	sprintf(connexionStatusStr, ",\"n\": {\"q\":\"fail\"}");
-       }   
-
+    }
+    
+    
     LE_INFO("connexionStatusStr : %s", connexionStatusStr);
     
 	sprintf(payload, "{\"count\":%d %s%s}", count, sensorsStr,connexionStatusStr);
     
     LE_INFO("payload %d : %s", sizeof(payload), payload);
+    LE_INFO("ICI 0");
                 
 	liveobjects_pubData(timerStreamID, payload, model, tags, latitude, longitude);
                 
@@ -457,6 +456,17 @@ void connectionHandler()
 COMPONENT_INIT
 {
 	
+    	//init API key
+    le_cfg_QuickGetString(CONFIG_TREE_API_KEY, _apiKey, sizeof(_apiKey), "");
+    if (strlen(_apiKey) == 0)
+    {
+        LE_INFO("OrangeStarterKit cannot start.");
+        LE_INFO("Please set API Key : config set /OrangeStarterKit/apiKey <your API key>");
+        exit(EXIT_SUCCESS);
+    }
+    
+    LE_INFO("OrangeStarterKit APIKEY is set.");
+    
     // init sensors
     GNSS_start(DATA_TIMER_IN_MS);
     
@@ -474,7 +484,7 @@ COMPONENT_INIT
 
 	//connect to liveObjects
 	le_info_GetImei(imei, sizeof(imei));
-	liveobjects_connect(APIKEY, NAMESPACE, imei, connectionHandler);
+	liveobjects_connect(_apiKey, NAMESPACE, imei, connectionHandler);
 
 
 	// start demo timer, publish a counter to LiveObjects

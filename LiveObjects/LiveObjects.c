@@ -167,10 +167,34 @@ void Connect
     }
 }
 
+
+
+//--------------------------------------------------------------------------------------------------
+/**
+ *  publish Binary Data
+ *  topic : one the Live Objects topic available
+ *  filename : file to send
+ */
+//--------------------------------------------------------------------------------------------------
+
+/*
+void liveobjects_pubFile
+(
+        const char* filename
+)
+{
+    if (mqttClient_IsConnected(_cliMqttRef))
+    {
+        LE_INFO("[LO][PublishFileContent] %s : %s ", _topicBinary, filename);
+        mqttClient_PublishFileContent(_cliMqttRef,  filename, _topicBinary);
+    }
+}
+*/
+
 //--------------------------------------------------------------------------------------------------
 /**
  *  publish Data
- *  topic : one the Live Objects topic available
+ *  topic : one of the Live Objects topic available
  *  payload : json payload
  */
 //--------------------------------------------------------------------------------------------------
@@ -183,7 +207,7 @@ static void liveobjects_publish
     if (mqttClient_IsConnected(_cliMqttRef))
     {
        	LE_INFO("[LO][Publish] %s : %s ", topic, payload);
-    	mqttClient_Publish(_cliMqttRef,  payload, strlen(payload), topic);
+    	mqttClient_Publish(_cliMqttRef,   (uint8_t *)  payload, strlen(payload), topic);
     }
 }
 
@@ -194,7 +218,7 @@ static void liveobjects_publish
  *  "s":  "<<streamId>>",
  *  "ts": "<<timestamp>>",
  *  "m":  "<<model>>",
- *  "v": <<value>> JSON object
+ *  "v": <<value>> JSON object max size 896 octets. to send more data use the liveobjects_pubFile function
  *  "t" : [<<tag1>>,<<tag2>>,...]
  *  "loc": [<<latitude>>, <<longitude>>]
  */
@@ -210,24 +234,22 @@ void liveobjects_pubData
 )
 {
 	char* s = swirjson_szSerialize("s", streamid, 0);
-
-	char v[100] = "";
+	char v[896] = "";
 	sprintf(v, "\"v\": %s", payload);
-
 	char* m = swirjson_szSerialize("m", model, 0);
-
 	char loc[30] = "";
 	sprintf(loc, "\"loc\":[%lf,%lf]", latitude, longitude);
-
 	char t[100] = "";
 	sprintf(t, "\"t\":%s", tags);
-
 	char message[1024] = "";
 	sprintf(message, "{%s, %s, %s, %s, %s}", s, m, v, loc, t);
 
 	LE_INFO("Publish data , %s", message);
 
 	liveobjects_publish(_topicData, message);
+    
+    if (m) free(m);  
+    if (s) free(s);  
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -250,7 +272,8 @@ void liveobjects_pubCmdRes
 )
 {
 	LE_INFO("[LO][Publish][Command response] done: %s ,cid: %d", response, cid);
-	char result[256] = "";
+	//char result[256] = "";
+	char result[1024] = "";
 	sprintf(result, "{\"res\": {\"done\": %s}, \"cid\": %d}", response, cid);
 
 	liveobjects_publish(_topicCommandRsp, result);
@@ -280,7 +303,8 @@ void liveobjects_pubConfig
 	char* value
 )
 {
-	char payload[256] = "";
+	char payload[1024] = "";
+	//char payload[256] = "";
 	sprintf(payload, "{\"cfg\": {\"%s\" : {\"t\": \"%s\",\"v\": \"%s\"}}}", key, type, value);
 	liveobjects_publish(_topicConfig, payload);
 }
@@ -313,7 +337,8 @@ void liveobjects_pubConfigUpdateResponse
 	int cid
 )
 {
-	char payload[256] = "";
+	//char payload[256] = "";
+	char payload[1024] = "";
 	sprintf(payload, "{\"cfg\": {\"%s\": {\"t\": \"%s\",\"v\": \"%s\"}},\"cid\": %d}", key, type, value, cid);
 	liveobjects_publish(_topicConfig, payload);
 }
@@ -345,7 +370,8 @@ void liveobjects_pubResource
 	char* jsonMetadata
 )
 {
-	char payload[256] = "";
+	char payload[1024] = "";
+	//char payload[256] = "";
 	sprintf(payload, "{\"rsc\": {\"%s\" : {\"v\": \"%s\",\"m\": %s}}}", ressourceId, version, jsonMetadata);
 	liveobjects_publish(_topicResource, payload);
 }
@@ -399,7 +425,8 @@ void liveobjects_pubResourceUpdateResponseError
 	char* errorDetails
 )
 {
-	char payload[256] = "";
+	char payload[1024] = "";
+	//char payload[256] = "";
 	sprintf(payload, "{\"errorCode\": \"%s\", \"errorDetails\": \"%s\"}", errorCode, errorDetails);
 	liveobjects_publish(_topicResourceUpdErr, payload);
 }

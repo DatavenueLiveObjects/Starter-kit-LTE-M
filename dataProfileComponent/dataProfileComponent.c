@@ -1,3 +1,13 @@
+//-------------------------------------------------------------------------------------------------
+
+/**
+ * @file dataProfileComponent.c
+ * set Orange network settings
+ *
+ *
+ */
+//-------------------------------------------------------------------------------------------------
+
 #include "legato.h"
 #include "interfaces.h"
 #include "dataProfileComponent.h"
