@@ -3,9 +3,11 @@
 echo 'clean'
 make clean
 
-echo 'check config'
-
-cfglegato
+echo "Configuring shell for Legato development"
+echo "----------------------------------------"
+pushd /home/mangoh/legato_framework/legato > /dev/null
+source bin/configlegatoenv
+popd > /dev/null
 
 echo 'build'
 make wp77xx

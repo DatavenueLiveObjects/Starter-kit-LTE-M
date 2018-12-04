@@ -23,7 +23,6 @@ requires:
         ma_led = /home/mangoh/mangOH/apps/LedService/ma_led.api
         le_mrc = modemServices/le_mrc.api
         le_cfg.api
-	
 	}
 	
 	  file:
