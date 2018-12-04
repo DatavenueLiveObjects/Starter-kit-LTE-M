@@ -28,7 +28,7 @@ char _topicResource[] 			= "dev/rsc";
 char _topicCommandRsp[] 		= "dev/cmd/res";
 char _topicResourceUpdResp[] 	= "dev/rsc/upd/res";
 char _topicResourceUpdErr[] 	= "dev/rsc/upd/err";
-
+char _topicBinary[]             = "dev/data/raw/none";
 //----
 /**
  *  Live Objects MQTT subscribe topics
@@ -128,7 +128,6 @@ static void DcsStateHandler
         }
         else
         {
-            //PrintMessage("Failed to start MQTT session with LO");
 
             Disconnect(true);
         }
@@ -167,29 +166,6 @@ void Connect
     }
 }
 
-
-
-//--------------------------------------------------------------------------------------------------
-/**
- *  publish Binary Data
- *  topic : one the Live Objects topic available
- *  filename : file to send
- */
-//--------------------------------------------------------------------------------------------------
-
-/*
-void liveobjects_pubFile
-(
-        const char* filename
-)
-{
-    if (mqttClient_IsConnected(_cliMqttRef))
-    {
-        LE_INFO("[LO][PublishFileContent] %s : %s ", _topicBinary, filename);
-        mqttClient_PublishFileContent(_cliMqttRef,  filename, _topicBinary);
-    }
-}
-*/
 
 //--------------------------------------------------------------------------------------------------
 /**
@@ -233,24 +209,72 @@ void liveobjects_pubData
 		double longitude
 )
 {
-	char* s = swirjson_szSerialize("s", streamid, 0);
+    char* s = swirjson_szSerialize("s", streamid, 0);
+    
 	char v[896] = "";
 	sprintf(v, "\"v\": %s", payload);
-	char* m = swirjson_szSerialize("m", model, 0);
-	char loc[30] = "";
+	
+    char* m = swirjson_szSerialize("m", model, 0);
+	
+    char loc[30] = "";
 	sprintf(loc, "\"loc\":[%lf,%lf]", latitude, longitude);
-	char t[100] = "";
+	
+    char t[100] = "";
 	sprintf(t, "\"t\":%s", tags);
-	char message[1024] = "";
+	
+    char message[1024] = "";
 	sprintf(message, "{%s, %s, %s, %s, %s}", s, m, v, loc, t);
 
+    if (m) free(m);  
+    if (s) free(s); 
+    
 	LE_INFO("Publish data , %s", message);
 
 	liveobjects_publish(_topicData, message);
-    
-    if (m) free(m);  
-    if (s) free(s);  
 }
+
+
+//--------------------------------------------------------------------------------------------------
+/**
+ *  publish binary data  on the binary topic
+ *
+ *  payload : uint8_t
+ *  length : size_t
+ */
+//--------------------------------------------------------------------------------------------------
+void liveobjects_pubBinary
+(
+        uint8_t *   payload,
+        size_t      length
+)
+{
+    if (mqttClient_IsConnected(_cliMqttRef))
+    {
+        LE_INFO("[LO][PublishBinary] %s : %d ", _topicBinary, length);
+        mqttClient_Publish(_cliMqttRef,  payload, length, _topicBinary);
+    }
+}
+
+
+//--------------------------------------------------------------------------------------------------
+/**
+ *  publish file  on the binary topic
+ * 
+ *  filename : const char*
+ */
+//--------------------------------------------------------------------------------------------------
+void liveobjects_pubFile
+(
+        const char* filename
+)
+{
+    if (mqttClient_IsConnected(_cliMqttRef))
+    {
+        LE_INFO("[LO][PublishFileContent] %s : %s ", _topicBinary, filename);
+        mqttClient_PublishFileContent(_cliMqttRef,  filename, _topicBinary);
+    }
+}
+
 
 //--------------------------------------------------------------------------------------------------
 /**

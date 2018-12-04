@@ -3,6 +3,8 @@
 
 LE_SHARED void liveobjects_connect(char* apikey, char* namespace, char* id, void* connectionHandler);
 LE_SHARED void liveobjects_pubData(char* streamid, char* payload, char* model, char* tags, double latitude, double longitude);
+LE_SHARED void liveobjects_pubBinary(uint8_t* payload, size_t length);
+LE_SHARED void liveobjects_pubFile(const char* filename);
 LE_SHARED void liveobjects_pubCmdRes(char* jsonStr, int cid);
 LE_SHARED void liveobjects_pubConfig(char* key, char* type, char* value);
 LE_SHARED void liveobjects_pubConfigUpdateResponse(char* key, char* type, char* value, int cid);
