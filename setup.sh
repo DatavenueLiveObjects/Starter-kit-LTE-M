@@ -108,8 +108,7 @@ echo "Install OrangeStarterKit"
 echo "==============================================================================="
 
 cd ~/OrangeStarterKit/
-
-echo 'build'
+echo 'build Orange StarterKit'
 make wp77xx
 
 build_result=$?
@@ -129,4 +128,3 @@ else
 	echo 'OrangeStarter kit build failed'
     exit 1
 fi
-
