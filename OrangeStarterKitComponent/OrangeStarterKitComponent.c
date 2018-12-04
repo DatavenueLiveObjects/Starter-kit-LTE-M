@@ -235,9 +235,7 @@ static void  configUpdate(
 
 	LE_INFO("config request update : response  %s / %s / %s", key, type, value);
 
-	liveobjects_pubConfigUpdateResponse(key, type, value,cid);
-    
-    
+	liveobjects_pubConfigUpdateResponse(key, type, value,cid); 
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -409,16 +407,22 @@ void demoTimer()
        	sprintf(connexionStatusStr, ",\"n\": {\"q\":\"fail\"}");
     }
     
-    
     LE_INFO("connexionStatusStr : %s", connexionStatusStr);
     
 	sprintf(payload, "{\"count\":%d %s%s}", count, sensorsStr,connexionStatusStr);
     
     LE_INFO("payload %d : %s", sizeof(payload), payload);
-    LE_INFO("ICI 0");
                 
 	liveobjects_pubData(timerStreamID, payload, model, tags, latitude, longitude);
-                
+    
+    // Publish file content
+    //#define BINARY_FILE "/home/root/content.bin"
+    //liveobjects_pubFile(BINARY_FILE);
+
+    // Publish binary content
+    //uint8_t BIN_SAMPLE[13] = {0xFF,0xD8,0xFF,0xE0,0x00,0x10,0x4A,0x46,0x49,0x46,0x00,0x01,0x02};
+    uint8_t BIN_SAMPLE[13] = {0x4C,0x69,0x76,0x65,0x4F,0x62,0x6A,0x65,0x63,0x74,0x73,0x00,0x00};
+    liveobjects_pubBinary(BIN_SAMPLE, sizeof(BIN_SAMPLE)); 
                 
     connexionStatus();
     
@@ -455,17 +459,14 @@ void connectionHandler()
 //--------------------------------------------------------------------------------------------------
 COMPONENT_INIT
 {
-	
-    	//init API key
+	//init API key
     le_cfg_QuickGetString(CONFIG_TREE_API_KEY, _apiKey, sizeof(_apiKey), "");
     if (strlen(_apiKey) == 0)
     {
         LE_INFO("OrangeStarterKit cannot start.");
-        LE_INFO("Please set API Key : config set /OrangeStarterKit/apiKey <your API key>");
+        LE_INFO("Please set API Key : config set /LiveObjects/apiKey <your API key>");
         exit(EXIT_SUCCESS);
     }
-    
-    LE_INFO("OrangeStarterKit APIKEY is set.");
     
     // init sensors
     GNSS_start(DATA_TIMER_IN_MS);
