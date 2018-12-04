@@ -20,6 +20,16 @@ done
 
 echo " => MangOH Red is online"
 
+device="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm info device')"
+
+if [ $device == "WP7702" ]
+    then
+        echo "Device is WP7702"
+    else
+        echo "Device is not a WP7702"
+        exit 1
+fi
+
 currentAPIKEY="$(ssh root@192.168.2.2 '/legato/systems/current/bin/config get /LiveObjects/apiKey')"
 if [ -z "${currentAPIKEY}" ]
     then
@@ -37,18 +47,27 @@ if [ -z "${currentAPIKEY}" ]
         fi
 fi
 
-echo "currentAPIKEY : ${APIKEY}"
-
-echo "==============================================================================="
-echo "Update board"
-echo "==============================================================================="
+echo "APIKEY : ${APIKEY}"
 
 echo "Configuring shell for Legato development"
 echo "----------------------------------------"
 pushd /home/mangoh/legato_framework/legato > /dev/null
 source bin/configlegatoenv
 popd > /dev/null
-update ~/mangOH/build/update_files/red/mangOH.wp77xx.update 192.168.2.2
+
+echo "==============================================================================="
+echo "Check board firmware"
+echo "==============================================================================="
+checkLedService="$(ssh root@192.168.2.2 '/legato/systems/current/bin/app status ledService' | cut -c2-14)" 
+
+if [ "$checkLedService" = "not installed" ]
+    then
+        echo "Update required"
+        update ~/mangOH/build/update_files/red/mangOH.wp77xx.update 192.168.2.2
+    else
+        echo "No update required"    
+fi
+
 sleep 3
 echo "Waiting for the mangOH Red"
 while ! ping -c 1 -n -w 1 192.168.2.2 &> /dev/null
