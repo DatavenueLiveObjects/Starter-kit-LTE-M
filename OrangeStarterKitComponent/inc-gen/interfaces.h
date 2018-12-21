@@ -15,6 +15,8 @@ extern "C" {
 #include "le_info_interface.h"
 #include "le_adc_interface.h"
 #include "ma_led_interface.h"
+#include "le_mrc_interface.h"
+#include "le_cfg_interface.h"
 
 #ifdef __cplusplus
 }

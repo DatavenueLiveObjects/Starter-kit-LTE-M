@@ -14,7 +14,6 @@
 #include "swir_json.h"
 #include "LiveObjects.h"
 #include "GNSSComponent.h"
-#include "dataProfileComponent.h"
 #include "sensorUtils.h"
 
 #define DATA_TIMER_IN_MS (60000)
@@ -41,13 +40,15 @@ char* cmdResultStreamID = "starterkit!cmdResult";
 
 //------
 /**
- * Orange network settings
+ * Orange network settings -- DEPRECATED
+ * to change your network settings, ssh root@192.168.2.2 and then change settings with the "cm data" command  
+ *  
  */
-char                                        _profileAPN[] = "orange.ltem.spec";
-char                                        _profileUser[] = "orange";
-char                                        _profilePwd[] = "orange";
-le_mdc_Auth_t                               _profileAuth = LE_MDC_AUTH_PAP;
-int				                            _dataProfileIndex = 1;
+//char                                        _profileAPN[] = "orange.ltem.spec";
+//char                                        _profileUser[] = "orange";
+//char                                        _profilePwd[] = "orange";
+//le_mdc_Auth_t                               _profileAuth = LE_MDC_AUTH_PAP;
+//int				                            _dataProfileIndex = 1;
 
 static le_timer_Ref_t dataPubTimerRef;
 
@@ -479,9 +480,6 @@ COMPONENT_INIT
 	} else {
 	    LedOn = true;
 	}
-    
-    // configure Orange network settings
-	dataProfile_set(_dataProfileIndex, _profileAPN, _profileAuth, _profileUser, _profilePwd);
 
 	//connect to liveObjects
 	le_info_GetImei(imei, sizeof(imei));
@@ -497,5 +495,4 @@ COMPONENT_INIT
 	le_timer_Start(dataPubTimerRef);
 
 	LE_INFO("=========================== Starter KIT LTE-M demo application started");
-
 }

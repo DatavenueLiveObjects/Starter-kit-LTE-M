@@ -143,6 +143,14 @@
  * A sample code can be seen in the following page:
  * - @subpage c_mdcDataSessions
  *
+ * The following extended functions should be used to get the disconnection reason instead.
+ * A pdpType parameter is required to specify which session's(IPv4 or IPv6 session) disconnect
+ * reason to get for IPv4v6 mode. For IPv4 and IPv6 mode, the pdpType is ignored because there
+ * is only one session.
+ * - le_mdc_GetDisconnectionReasonExt()
+ * - le_mdc_GetPlatformSpecificDisconnectionCodeExt()
+ * - le_mdc_GetPlatformSpecificFailureConnectionReasonExt()
+ *
  * @section le_mdc_dataStatistics Data Statistics
  *
  * The amount of received and transmitted data can be retrieved through le_mdc_GetBytesCounters().
@@ -1410,6 +1418,9 @@ le_result_t le_mdc_GetProfileFromApn
  *
  * @note If the caller is passing a bad pointer into this function, it is a fatal error, the
  *       function will not return.
+ *
+ * @deprecated This function is deprecated, le_mdc_GetDisconnectionReasonExt should be used for the
+ *             new code.
  */
 //--------------------------------------------------------------------------------------------------
 le_mdc_DisconnectionReason_t le_mdc_GetDisconnectionReason
@@ -1429,6 +1440,9 @@ le_mdc_DisconnectionReason_t le_mdc_GetDisconnectionReason
  *
  * @note If the caller is passing a bad pointer into this function, it is a fatal error, the
  *       function will not return.
+ *
+ * @deprecated This function is deprecated, le_mdc_GetPlatformSpecificDisconnectionCodeExt should
+ *             be used for the new code.
  */
 //--------------------------------------------------------------------------------------------------
 int32_t le_mdc_GetPlatformSpecificDisconnectionCode
@@ -1441,14 +1455,88 @@ int32_t le_mdc_GetPlatformSpecificDisconnectionCode
 /**
  * Called to get the platform specific connection failure reason.
  *
+ * Refer to @ref platformConstraintsSpecificErrorCodes for platform specific
+ * connection failure types and code descriptions.
+ *
  * @note If the caller is passing a bad pointer into this function, it is a fatal error, the
  *       function will not return.
+ *
+ * @deprecated This function is deprecated, le_mdc_GetPlatformSpecificFailureConnectionReasonExt
+ *             should be used for new code.
  */
 //--------------------------------------------------------------------------------------------------
 void le_mdc_GetPlatformSpecificFailureConnectionReason
 (
     le_mdc_ProfileRef_t profileRef,
         ///< [IN] profile reference
+    int32_t* failureTypePtr,
+        ///< [OUT] platform specific failure type
+    int32_t* failureCodePtr
+        ///< [OUT] platform specific failure code
+);
+
+//--------------------------------------------------------------------------------------------------
+/**
+ * Called to get the disconnection reason.
+ *
+ * @return The disconnection reason.
+ *
+ * @note If the caller is passing a bad pointer into this function, it is a fatal error, the
+ *       function will not return.
+ * @note For IPv4v6 mode, pdpType specifies which session's disconnect reason to get(IPv4 or IPv6
+ *       session). For IPv4 and IPv6 mode, pdpType is ignored because there is only one session for
+ *       IPv4 and IPv6 mode.
+ */
+//--------------------------------------------------------------------------------------------------
+le_mdc_DisconnectionReason_t le_mdc_GetDisconnectionReasonExt
+(
+    le_mdc_ProfileRef_t profileRef,
+        ///< [IN] profile reference
+    le_mdc_Pdp_t pdpType
+        ///< [IN] pdp type of session
+);
+
+//--------------------------------------------------------------------------------------------------
+/**
+ * Called to get the platform specific disconnection code.
+ *
+ * Refer to @ref platformConstraintsSpecificErrorCodes for platform specific
+ * disconnection code description.
+ *
+ * @return The platform specific disconnection code.
+ *
+ * @note If the caller is passing a bad pointer into this function, it is a fatal error, the
+ *       function will not return.
+ * @note For IPv4v6 mode, pdpType specifies which session's disconnect reason to get(IPv4 or IPv6
+ *       session). For IPv4 and IPv6 mode, pdpType is ignored because there is only one session for
+ *       IPv4 and IPv6 mode.
+ */
+//--------------------------------------------------------------------------------------------------
+int32_t le_mdc_GetPlatformSpecificDisconnectionCodeExt
+(
+    le_mdc_ProfileRef_t profileRef,
+        ///< [IN] profile reference
+    le_mdc_Pdp_t pdpType
+        ///< [IN] pdp type of session
+);
+
+//--------------------------------------------------------------------------------------------------
+/**
+ * Called to get the platform specific connection failure reason.
+ *
+ * @note If the caller is passing a bad pointer into this function, it is a fatal error, the
+ *       function will not return.
+ * @note For IPv4v6 mode, pdpType specifies which session's disconnect reason to get(IPv4 or IPv6
+ *       session). For IPv4 and IPv6 mode, pdpType is ignored because there is only one session for
+ *       IPv4 and IPv6 mode.
+ */
+//--------------------------------------------------------------------------------------------------
+void le_mdc_GetPlatformSpecificFailureConnectionReasonExt
+(
+    le_mdc_ProfileRef_t profileRef,
+        ///< [IN] profile reference
+    le_mdc_Pdp_t pdpType,
+        ///< [IN] pdp type of session
     int32_t* failureTypePtr,
         ///< [OUT] platform specific failure type
     int32_t* failureCodePtr

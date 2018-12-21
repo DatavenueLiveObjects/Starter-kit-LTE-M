@@ -295,9 +295,24 @@ le_result_t mqttClient_Publish
 (
     mqttClient_InstanceRef_t mqttClientRef,
         ///< [IN]
-    const char* LE_NONNULL data,
+    const uint8_t* dataPtr,
         ///< [IN]
-    int32_t dataLen,
+    size_t dataSize,
+        ///< [IN]
+    const char* LE_NONNULL topicName
+        ///< [IN]
+);
+
+//--------------------------------------------------------------------------------------------------
+/**
+ * Publish binary content of a giben filename
+ */
+//--------------------------------------------------------------------------------------------------
+le_result_t mqttClient_PublishFileContent
+(
+    mqttClient_InstanceRef_t mqttClientRef,
+        ///< [IN]
+    const char* LE_NONNULL filanem,
         ///< [IN]
     const char* LE_NONNULL topicName
         ///< [IN]

@@ -2,7 +2,7 @@ sandboxed: false
 
 executables:
 {
-	OrangeStarterKit = ( OrangeStarterKitComponent dataProfileComponent LiveObjects GNSSComponent)
+	OrangeStarterKit = ( OrangeStarterKitComponent LiveObjects GNSSComponent)
 }
 
 processes:
@@ -33,11 +33,8 @@ bindings:
     
     OrangeStarterKit.LiveObjects.mqttClient 				-> mqttClient.mqttClient
     OrangeStarterKit.LiveObjects.le_data 					-> dataConnectionService.le_data
-    
-    OrangeStarterKit.dataProfileComponent.le_data 			-> dataConnectionService.le_data
-    OrangeStarterKit.dataProfileComponent.le_mdc 			-> modemService.le_mdc
-    
-    OrangeStarterKit.OrangeStarterKitComponent.le_mrc             -> modemService.le_mrc
+     
+    OrangeStarterKit.OrangeStarterKitComponent.le_mrc       -> modemService.le_mrc
     
     OrangeStarterKit.OrangeStarterKitComponent.le_mdc 		-> modemService.le_mdc
     OrangeStarterKit.OrangeStarterKitComponent.le_info 		-> modemService.le_info   	

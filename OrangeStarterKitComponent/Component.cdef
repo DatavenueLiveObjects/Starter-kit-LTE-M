@@ -8,8 +8,7 @@ sources:
 cflags:
 {
 	-I $CURDIR/../LiveObjects
-	-I $CURDIR/../dataProfileComponent
-    -I $CURDIR/../GNSSComponent
+	-I $CURDIR/../GNSSComponent
     
 }
 
