@@ -19,22 +19,25 @@ device="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm info device')"
 
 if [ $device == "WP7702" ]
     then
-        echo "Module is a WP7702"
+        echo "Module is a WP7702."
     else
-        echo "Device is not a WP7702"
-	echo "Installation stop"
+        echo -e "\033[1;31mDevice is not a WP7702.\033[0m"
+	echo "Installation stop."
         exit 1
 fi
 
-echo "Configuring shell for Legato development"
-echo "----------------------------------------"
-pushd /home/mangoh/legato_framework/legato > /dev/null
-source bin/configlegatoenv
-popd > /dev/null
+echo ""
+echo "==============================================================================="
+echo "Configuring shell for Legato development..."
+echo "==============================================================================="
+pushd /home/mangoh/legato_framework/legato &>/dev/null
+source bin/configlegatoenv &>/dev/null
+popd &>/dev/null
 
 echo ""
 echo "==============================================================================="
 echo "Check board firmware"
+echo "==============================================================================="
 version1="$(ssh root@192.168.2.2 '/legato/systems/current/bin/legato version'| \
 cut -c1-2)"
 version2="$(ssh root@192.168.2.2 '/legato/systems/current/bin/legato version'| \
@@ -58,132 +61,100 @@ if [ $version -lt "1809"  ]
 fi
 echo ""
 
-echo "==============================================================================="
-echo "Network configuration"
-echo "==============================================================================="
-
-MNO="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm sim imsi'| cut -c32-36)"
-
-if [ -z "$MNO" ]
-	then
-	echo "Unable to get SIM informations"
-	echo "check your SIM card and retry"
-	echo "exit setup"
-	exit 1
+bash scripts/network.sh
+if [[ $? -eq 1 ]]
+        then
+                echo -e "\033[1;31mConnection to network failed, abort setup.\033[0m"
+                exit 1
 fi
-
-if [ $MNO = "20801" ]
-	then
-                echo "Configuration for Orange France"
-                APN="orange.ltem.spec"
-                auth="pap"
-                username="orange"
-                password="orange"
-        else
-                echo "Unkown Network Operator"
-                echo "enter your connection settings"
-                echo "APN : "
-                read APN
-                echo "Username :"
-                read username
-                echo "Password :"
-                read password
-                echo "Authentification mode : <none/pap/chap>"
-                read auth
-fi
-
-ssh root@192.168.2.2 '/legato/systems/current/bin/cm data connect -1'
-
-ssh root@192.168.2.2 '/legato/systems/current/bin/cm data profile 1'
-command="/legato/systems/current/bin/cm data apn"
-ssh root@192.168.2.2 $command $APN
-command="/legato/systems/current/bin/cm data auth"
-ssh root@192.168.2.2 $command $auth $username $password
-
-ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio off'
-sleep 2
-ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio on'
-ssh root@192.168.2.2 '/legato/systems/current/bin/cm data connect'
-
-
-
-echo "done"
 echo ""
 
-
-
-echo "==============================================================================="
-echo "Live Objects configuration"
-echo "==============================================================================="
-echo "If you don't have your api key yet :"
-echo "  - connect to Live Objects https://liveobjects.orange-business.com/#/login"
-echo "  - select the configuration menu and then Api Keys"
-echo "  - add a new key, select the  profile : Mqtt Device"
-
-currentAPIKEY="$(ssh root@192.168.2.2 '/legato/systems/current/bin/config get /LiveObjects/apiKey')"
-if [ -z "${currentAPIKEY}" ]
-    then
-        echo "enter your Api key "
-	read APIKEY
-	command="/legato/systems/current/bin/config set /LiveObjects/apiKey"
-	ssh root@192.168.2.2 $command $APIKEY
-
-    else
-        echo "Previous APIKEY found : ${currentAPIKEY}"
-        echo "Replace ? y / n"
-        read updateAPIKEYControl
-        if [ "$updateAPIKEYControl" = "y"  ]
-            then
-            	echo "enter your Api key "
-        	read APIKEY
-        	command="/legato/systems/current/bin/config set /LiveObjects/apiKey"
-        	ssh root@192.168.2.2 $command $APIKEY
-        fi
+bash scripts/liveObjects.sh
+if [[ $? -eq 1 ]]
+        then
+                echo -e "\033[1;31mFailed to configure Live Objects, abort setup.\033[0m"
+                exit 1
 fi
-
+echo ""
 echo "==============================================================================="
 echo "Install mqttClient"
 echo "==============================================================================="
 cd ~/mqttClient-for-Legato/mqttClientApi/
-make clean
+make clean &>/dev/null
 
-echo "build mqttClient"
-make wp77xx
+echo "Build mqttClient"
+mqtt=$(make wp77xx &>/dev/null)
 
 build_result=$?
 
 if [ $build_result -eq 0 ]; then
-        echo "upload to the mangOH red"
+        echo "Upload to the mangOH red"
         update mqttClient.wp77xx.update 192.168.2.2
         sleep 3
 else
         echo "==============================================================================="
-        echo "mqttClient build failed"
+        echo -e "\033[1;31mmqttClient build failed\033[0m"
         exit 1
 fi
 
+echo ""
 echo "==============================================================================="
 echo "Install OrangeStarterKit"
 echo "==============================================================================="
 
 cd ~/OrangeStarterKit/
-echo "build Orange StarterKit"
-make wp77xx
+echo "Build Orange StarterKit"
+make clean &>/dev/null
+make wp77xx &>/dev/null
 
 build_result=$?
 if [ $build_result -eq 0 ] 
    then
-	echo "upload to the mangOH red"
+	echo "Upload to the mangOH red"
 	update OrangeStarterKit.wp77xx.update 192.168.2.2
-    	sleep 3
-	ssh root@192.168.2.2 '/legato/systems/current/bin/app start OrangeStarterKit'
-    	echo "==============================================================================="
-    	echo "Setup successful"
-    	echo "Connect to LiveObjects to see your datas"
-	echo "check logs with the following command : ssh root@192.168.2.2 '/sbin/logread -f'"
-    	exit 0
     else
     	echo "==============================================================================="
-    	echo "OrangeStarter kit build failed"
+    	echo -e "\033[1;31mOrangeStarter kit build failed\033[0m"
     	exit 1
 fi
+
+
+sleep 3
+#ssh root@192.168.2.2 '/legato/systems/current/bin/app restart OrangeStarterKit'
+
+chmod +x scripts/led.sh
+chmod +x scripts/liveObjects.sh
+chmod +x scripts/checkApiKey.sh
+chmod +x scripts/logs.sh
+chmod +x scripts/systemCheck.sh
+chmod +x scripts/appStatus.sh
+
+
+#check app is running
+bash scripts/appStatus.sh
+if [[ $? -eq 1 ]]
+        then
+                echo -e "\033[1;31mApplication failed to join Live Objects, abort setup.\033[0m"
+                exit 1
+fi
+
+
+IMEI="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm info imei')"
+
+echo ""
+echo "==============================================================================="
+echo -e "\033[1;32mSetup successful\033[0m"
+echo "==============================================================================="
+echo ""
+echo -e "Connect to LiveObjects to see your datas:"
+echo -e "  In the Devices menu, a new device is created with the name \033[32m'Starter Kit'\033[0m and the ID \033[32m'urn:lo:nsid:starterkit:$IMEI'\033[0m"
+echo ""
+echo -e "\033[4;37mCheck board's logs with the following command:\033[0m"
+echo "	~/OrangeStarterKit/scripts/logs.sh"
+echo ""
+echo -e "\033[4;37mYou can now try to change the led status on the board with the following command:\033[0m"
+echo "	~/OrangeStarterKit/scripts/led.sh"
+echo ""
+
+exit 0
+
