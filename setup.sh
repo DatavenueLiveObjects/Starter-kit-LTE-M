@@ -38,14 +38,10 @@ echo ""
 echo "==============================================================================="
 echo "Check board firmware"
 echo "==============================================================================="
-version1="$(ssh root@192.168.2.2 '/legato/systems/current/bin/legato version'| \
-cut -c1-2)"
-version2="$(ssh root@192.168.2.2 '/legato/systems/current/bin/legato version'| \
-cut -c4-5)"
-version="$version1$version2"
-echo "Legato version found : $version"
+legatoBoardVersion=$(ssh root@192.168.2.2 '/legato/systems/current/bin/legato version' | cut -c1-52)
+legatoVMVersion=$(cat /home/mangoh/mangOH/build/red_wp77xx/staging/version)
 
-if [ $version -lt "1809"  ]
+if [ "$legatoBoardVersion" != "$legatoVMVersion" ]
     then
         echo "Update required"
         update ~/mangOH/build/update_files/red/mangOH.wp77xx.update 192.168.2.2
