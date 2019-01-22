@@ -45,8 +45,8 @@ if [ "$legatoBoardVersion" != "$legatoVMVersion" ]
     then
         echo "Update required"
         update ~/mangOH/build/update_files/red/mangOH.wp77xx.update 192.168.2.2
-    	sleep 3
 	echo "Waiting for the mangOH Red"
+	sleep 20
 	while ! ping -c 1 -n -w 1 192.168.2.2 &> /dev/null
 	do
 	    printf "%c" "."
