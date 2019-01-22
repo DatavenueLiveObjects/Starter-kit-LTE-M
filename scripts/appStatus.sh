@@ -20,6 +20,9 @@ if [[ $appStatus == *"stopped"* ]]
         echo "Application is not running. Starting..."
         appStatus="$(ssh root@192.168.2.2 '/legato/systems/current/bin/app start OrangeStarterKit')"
         sleep 2
+   else 
+        forceRestart=appStatus="$(ssh root@192.168.2.2 '/legato/systems/current/bin/app restart OrangeStarterKit')"
+	sleep 2
 fi
 
 
