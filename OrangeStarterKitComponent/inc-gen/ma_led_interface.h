@@ -135,8 +135,10 @@ typedef enum
 {
     MA_LED_OFF = 0,
         ///< The LED is off
-    MA_LED_ON = 1
+    MA_LED_ON = 1,
         ///< The LED is on
+    MA_LED_UNKNOWN = 2
+        ///< The LED status could not be determined
 }
 ma_led_LedStatus_t;
 

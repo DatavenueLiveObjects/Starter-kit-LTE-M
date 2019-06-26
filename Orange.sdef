@@ -1,0 +1,14 @@
+#include "../mangOH/mangOH.sdef"
+
+interfaceSearch:
+{
+	../mqttClient-for-Legato/mqttClientApi
+}
+
+
+apps:
+{
+	../mqttClient-for-Legato/mqttClientApi/mqttClient.adef
+	OrangeStarterKit
+}
+

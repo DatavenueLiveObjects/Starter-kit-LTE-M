@@ -37,7 +37,7 @@ if [[ $appStatus == *"running"* ]]
 	break
     else
 	printf "%c" "."
-        if [[ $timer -gt "10" ]] 
+        if [[ $timer -gt "60" ]] 
                 then
         		echo -e "\033[31mERROR: Application failed to start.\033[0m"
                         echo "Check board logs."
@@ -68,7 +68,7 @@ result=$(curl -X GET --header 'Accept: application/json' --header "X-API-KEY:$AP
 if [[ $result != *"ONLINE"* ]]
     then
 	printf "%c" ".$timer"
-        if [[ $timer -gt "10" ]] 
+        if [[ $timer -gt "60" ]] 
                 then
                         echo -e "\033[31mERROR: Application connection to Live Object failed.\033[0m"
 			echo "Check you APIKEY. Device MQTT read/Write mode must be check to enable the device connection to Live Objects."

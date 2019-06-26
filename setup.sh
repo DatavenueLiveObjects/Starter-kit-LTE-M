@@ -15,6 +15,21 @@ done
 
 echo " => MangOH Red is online"
 
+
+#make scripts runnable
+chmod +x scripts/led.sh
+chmod +x scripts/liveObjects.sh
+chmod +x scripts/checkApiKey.sh
+chmod +x scripts/logs.sh
+chmod +x scripts/systemCheck.sh
+chmod +x scripts/appStatus.sh
+chmod +x scripts/network.sh
+chmod +x scripts/build.sh
+chmod +x scripts/resetBoard.sh
+chmod +x scripts/selectRAT.sh
+
+
+
 device="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm info device')"
 
 if [ $device == "WP7702" ]
@@ -57,7 +72,7 @@ if [ "$legatoBoardVersion" != "$legatoVMVersion" ]
 fi
 echo ""
 
-bash scripts/network.sh
+./scripts/network.sh
 if [[ $? -eq 1 ]]
         then
                 echo -e "\033[1;31mConnection to network failed, abort setup.\033[0m"
@@ -65,7 +80,7 @@ if [[ $? -eq 1 ]]
 fi
 echo ""
 
-bash scripts/liveObjects.sh
+./scripts/liveObjects.sh
 if [[ $? -eq 1 ]]
         then
                 echo -e "\033[1;31mFailed to configure Live Objects, abort setup.\033[0m"
@@ -115,19 +130,13 @@ if [ $build_result -eq 0 ]
 fi
 
 
-sleep 3
-#ssh root@192.168.2.2 '/legato/systems/current/bin/app restart OrangeStarterKit'
 
-chmod +x scripts/led.sh
-chmod +x scripts/liveObjects.sh
-chmod +x scripts/checkApiKey.sh
-chmod +x scripts/logs.sh
-chmod +x scripts/systemCheck.sh
-chmod +x scripts/appStatus.sh
-
+ssh root@192.168.2.2 '/sbin/reboot'
+sleep 10
 
 #check app is running
-bash scripts/appStatus.sh
+
+./scripts/appStatus.sh
 if [[ $? -eq 1 ]]
         then
                 echo -e "\033[1;31mApplication failed to join Live Objects, abort setup.\033[0m"

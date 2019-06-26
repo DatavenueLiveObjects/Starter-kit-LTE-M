@@ -24,6 +24,63 @@ if [ "$SIM" != "LE_SIM_READY" ]
         exit 1
 fi
 
+#default RAT is LTE-M
+radioPowerOn="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio off')"
+ssh root@192.168.2.2 '(echo -ne"AT\r"; echo -ne "AT!SELCIOT=6\r") | /usr/bin/microcom /dev/ttyAT -t 1000 &> /dev/null'
+#radioPowerOn="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio on')"
+
+case "$MNO" in
+                "20801")
+                        echo "Data configuration for Orange France"
+                        APN="orange.ltem.spec"
+                        auth="pap"
+                        username="orange"
+                        password="orange"
+                        ;;
+                "20610")
+                        echo "Data configuration for Orange Belgium"
+                        APN="orange.ltem.spec"
+                        auth="none"
+                        ;;
+                *)
+                        echo "Unkown Network Operator"
+                        echo "enter your data connection settings"
+                        echo "APN : "
+                       read APN
+                        echo "Username :"
+                        read username
+                        echo "Password :"
+                        read password
+                        echo "Authentification mode : <none/pap/chap>"
+                        read auth
+                        ;;
+        esac
+
+        #disconnect
+        dataConnectionStatus="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm data | grep "Connected:"')"
+
+        if [ $(echo "$dataConnectionStatus" | cut -c32-32)  = "y" ]
+                then
+                        result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm data connect -1' 2>/dev/null)
+        fi
+
+        #configure data profile 1
+        result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm data profile 1')
+        command="/legato/systems/current/bin/cm data apn"
+        result=$(ssh root@192.168.2.2 $command $APN)
+        command="/legato/systems/current/bin/cm data auth"
+        result=$(ssh root@192.168.2.2 $command $auth $username $password)
+        result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio off')
+        sleep 2
+        result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio on')
+        result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm data connect' 2>/dev/null)
+
+        echo "Data configuration done"
+
+
+
+
+
 #Wait device is attached
 while :
 do
@@ -39,31 +96,9 @@ do
 	fi
 done
 
-timer=1
-while :
-do
-	radioStatus="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio'| grep Status | cut -c32-34)"
-	if [ $radioStatus = "Reg" ]
-        	then
-                	echo "Device is registred"
-			radioSignal="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio'| grep RAT)"
-			echo $radioSignal
-                	break
-        	else
-                	if [[ $timer -gt "20" ]]
-				then
-					echo -e "\033[1;31mERROR: Unable to join network.\033[0m"
-					echo "Check the antenna and your subscription"
-					exit 1
-			fi
-			printf "%c" "."
-                	sleep 1
-	fi
-	timer=$(($timer+1))
-done
-
 echo "Check signal strength"
 
+timer=1
 while :
 do
 
@@ -75,6 +110,12 @@ do
 			echo $radioSignal
 			break 
 		else
+                       if [[ $timer -gt "20" ]]
+                               then
+                                       echo -e "\033[1;31mERROR: Unable to join network.\033[0m"
+                                       echo "Check the antenna and your subscription"
+                                       exit 1
+                       fi
 			printf "%c" "."
 			sleep 2
 	fi
@@ -85,48 +126,6 @@ echo ""
 echo "Set data profile."
 while :
 do
-	if [ $MNO = "20801" ]
-		then
-                	echo "Data configuration for Orange France"
-                	APN="orange.ltem.spec"
-                	auth="pap"
-                	username="orange"
-                	password="orange"
-        	else
-                	echo "Unkown Network Operator"
-                	echo "enter your data connection settings"
-                	echo "APN : "
-                	read APN
-                	echo "Username :"
-                	read username
-                	echo "Password :"
-                	read password
-                	echo "Authentification mode : <none/pap/chap>"
-                	read auth
-	fi
-
-
-	#disconnect
-	dataConnectionStatus="$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm data | grep "Connected:"')"
-
-	if [ $(echo "$dataConnectionStatus" | cut -c32-32)  = "y" ]
-        	then
-			result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm data connect -1' 2>/dev/null)
-	fi
-	
-	#configure data profile 1
-	result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm data profile 1')
-	command="/legato/systems/current/bin/cm data apn"
-	result=$(ssh root@192.168.2.2 $command $APN)
-	command="/legato/systems/current/bin/cm data auth"
-	result=$(ssh root@192.168.2.2 $command $auth $username $password)
-	result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio off')
-	sleep 2
-	result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm radio on')
-	result=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm data connect' 2>/dev/null)
-
-	echo "Data configuration done"
-
 	timer=1
 
 	while :
@@ -153,4 +152,3 @@ do
 
 	done
 done
-

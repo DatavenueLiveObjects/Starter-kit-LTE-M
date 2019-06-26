@@ -227,6 +227,23 @@ mqttClient_InstanceRef_t mqttClient_Create
 
 //--------------------------------------------------------------------------------------------------
 /**
+ * Set additional TLS parameters, (optional)
+ */
+//--------------------------------------------------------------------------------------------------
+le_result_t mqttClient_SetTls
+(
+    mqttClient_InstanceRef_t mqttClientRef,
+        ///< [IN]
+    const char* LE_NONNULL rootCA,
+        ///< [IN]
+    const char* LE_NONNULL certificate,
+        ///< [IN]
+    const char* LE_NONNULL privateKey
+        ///< [IN]
+);
+
+//--------------------------------------------------------------------------------------------------
+/**
  * Delete a MQTT instance
  */
 //--------------------------------------------------------------------------------------------------

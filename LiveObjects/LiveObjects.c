@@ -28,7 +28,7 @@ char _topicResource[] 			= "dev/rsc";
 char _topicCommandRsp[] 		= "dev/cmd/res";
 char _topicResourceUpdResp[] 	= "dev/rsc/upd/res";
 char _topicResourceUpdErr[] 	= "dev/rsc/upd/err";
-char _topicBinary[]             = "dev/data/raw/none";
+char _topicBinary[]             = "dev/v1/data/binary";
 //----
 /**
  *  Live Objects MQTT subscribe topics

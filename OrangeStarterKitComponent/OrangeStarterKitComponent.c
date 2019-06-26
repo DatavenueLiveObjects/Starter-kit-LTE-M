@@ -9,6 +9,7 @@
  */
 //--------------------------------------------------------------------------------------------------
 
+
 #include "legato.h"
 #include "interfaces.h"
 #include "swir_json.h"
@@ -356,6 +357,72 @@ void connexionStatus()
 
 //--------------------------------------------------------------------------------------------------
 /**
+ *  Get radio signal metrics
+ */
+//--------------------------------------------------------------------------------------------------
+
+const char* getSignalMetrics()
+{
+    le_mrc_Rat_t  rat;
+    int32_t rxLevel = 0;
+    uint32_t er = 0;
+    int32_t ecio = 0;
+    int32_t rscp = 0;
+    int32_t sinr = 0;
+    int32_t rsrq = 0;
+    int32_t rsrp = 0;
+    int32_t snr = 0;
+    int32_t io = 0;
+    static char signalQualityJson[100] = "";
+
+    le_mrc_MetricsRef_t metricsRef = le_mrc_MeasureSignalMetrics();
+    //LE_ASSERT(metricsRef != NULL);
+
+    rat = le_mrc_GetRatOfSignalMetrics(metricsRef);
+    LE_INFO("RAT of signal metrics is %d",rat);
+    switch(rat)
+    {
+        case LE_MRC_RAT_GSM:
+            le_mrc_GetGsmSignalMetrics(metricsRef, &rxLevel, &er);
+            LE_INFO("GSM metrics rxLevel.%ddBm, er.%d", rxLevel, er);
+            sprintf(signalQualityJson, "\"rat\":\"GSM\",\"rxlevel\":\"%ddBm\",\"er\":\"%d\"   ",rxLevel, er);
+            break;
+
+        case LE_MRC_RAT_UMTS:
+            le_mrc_GetUmtsSignalMetrics(metricsRef, &rxLevel, &er, &ecio, &rscp, &sinr);
+            LE_INFO("UMTS metrics rxLevel.%ddBm, er.%d, ecio.%010.1fdB, rscp.%ddBm, sinr.%ddB",
+                    rxLevel, er, ((double)ecio/10), rscp, sinr);
+            break;
+
+        case LE_MRC_RAT_LTE:
+            le_mrc_GetLteSignalMetrics(metricsRef, &rxLevel, &er, &rsrq, &rsrp, &snr);
+            LE_INFO("LTE metrics rxLevel.%ddBm, er.%d, rsrq.%010.1fdB, "
+                    "rsrp.%010.1fdBm, snr.%010.1fdB",
+                    rxLevel, er, ((double)rsrq/10), ((double)rsrp/10), ((double)snr/10));
+
+            sprintf(signalQualityJson, "\"rat\":\"LTE\",\"rxlevel\":\"%ddBm\",\"er\":\"%d\",\"RSQR\":\"%010.1fdB\" ,\"RSRP\":\"%010.1fdBm\" ,\"SNR\":\"%010.1fdB\"",rxLevel, er, ((double)rsrq/10), ((double)rsrp/10), ((double)snr/10));
+
+            break;
+
+        case LE_MRC_RAT_CDMA:
+            le_mrc_GetCdmaSignalMetrics(metricsRef,  &rxLevel, &er, &ecio, &sinr, &io);
+            LE_INFO("CDMA metrics rxLevel.%ddBm, er.%d, ecio.%010.1fdB, "
+                    "sinr.%ddB, io.%ddBm",
+                    rxLevel, er, ((double)ecio/10), sinr, io);
+            break;
+
+        default:
+            LE_FATAL("Unknown RAT!");
+            break;
+    }
+
+    le_mrc_DeleteSignalMetrics(metricsRef);
+
+    return signalQualityJson;
+}
+
+//--------------------------------------------------------------------------------------------------
+/**
  *  publish data to liveobjects
  */
 //--------------------------------------------------------------------------------------------------
@@ -363,20 +430,20 @@ void demoTimer()
 {
 
 	char* model = "demo";
-	char* tags = "[\"lightlevel\", \"count\"]";
+	char* tags = "[\"lightlevel\", \"pressure\", \"temperature\",\"network\", \"radio\"]";
 	char pressureStr[100] = "";
 	char temperatureStr[100] = "";
     char connexionStatusStr[100] = "";
     char sensorsStr[100] = "";
-	char payload[896] = "";
-    
-    
+	char payload[200] = "";
+	//char payloadNetwork[200] = "";
+
     int32_t lightLevel = 0;
     double pressure = 0;
     double temperature = 0;
 
     count = count + 1;
-    
+
     //get sensors values
     LightSensor(&lightLevel);
 
@@ -398,32 +465,41 @@ void demoTimer()
     
     GNSS_get(&latitude, &longitude);
     
-    //get network signal quality, range : 0-5
-    uint32_t sigQual;
-    if(le_mrc_GetSignalQual(&sigQual) == LE_OK) {
-        sprintf(connexionStatusStr, ",\"network\": {\"signalQuality\":%d}", sigQual);
-        
-    }
-    else {
-       	sprintf(connexionStatusStr, ",\"n\": {\"q\":\"fail\"}");
-    }
-    
-    LE_INFO("connexionStatusStr : %s", connexionStatusStr);
-    
-	sprintf(payload, "{\"count\":%d %s%s}", count, sensorsStr,connexionStatusStr);
-    
-    LE_INFO("payload %d : %s", sizeof(payload), payload);
-                
-	liveobjects_pubData(timerStreamID, payload, model, tags, latitude, longitude);
-    
+
+
+
+	 //get network signal quality, range : 0-5
+	    uint32_t sigQual;
+	    if(le_mrc_GetSignalQual(&sigQual) == LE_OK) {
+	        sprintf(connexionStatusStr, "\"RadioLevel\":%d, %s", sigQual,getSignalMetrics());
+	        LE_INFO(connexionStatusStr);
+	        LE_INFO(getSignalMetrics());
+
+	    }
+	    else {
+	       	sprintf(connexionStatusStr, "\"q\":\"fail\"");
+	    }
+
+	    LE_INFO("connexionStatusStr : %s", connexionStatusStr);
+
+
+	    //sprintf(payloadNetwork, "{%s}", connexionStatusStr);
+
+		sprintf(payload, "{\"count\":%d %s, \"network\": {%s}}", count, sensorsStr, connexionStatusStr);
+		LE_INFO("payload %d : %s", strlen(payload), payload);
+
+		liveobjects_pubData(timerStreamID, payload, model, tags, latitude, longitude);
+
+
+
     // Publish file content
     //#define BINARY_FILE "/home/root/content.bin"
     //liveobjects_pubFile(BINARY_FILE);
 
     // Publish binary content
     //uint8_t BIN_SAMPLE[13] = {0xFF,0xD8,0xFF,0xE0,0x00,0x10,0x4A,0x46,0x49,0x46,0x00,0x01,0x02};
-    uint8_t BIN_SAMPLE[13] = {0x4C,0x69,0x76,0x65,0x4F,0x62,0x6A,0x65,0x63,0x74,0x73,0x00,0x00};
-    liveobjects_pubBinary(BIN_SAMPLE, sizeof(BIN_SAMPLE)); 
+    //uint8_t BIN_SAMPLE[13] = {0x4C,0x69,0x76,0x65,0x4F,0x62,0x6A,0x65,0x63,0x74,0x73,0x00,0x00};
+    //liveobjects_pubBinary(BIN_SAMPLE, sizeof(BIN_SAMPLE));
                 
     connexionStatus();
     
