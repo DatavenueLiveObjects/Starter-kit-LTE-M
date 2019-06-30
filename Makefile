@@ -13,5 +13,5 @@ $(TARGETS):
                   Orange.sdef
 
 clean:
-        rm -rf _build_* *.ar7 *.wp7 *.ar86 *.wp85 *.localhost *.update
+	rm -rf _build_* *.ar7 *.wp7 *.ar86 *.wp85 *.localhost *.update
 
