@@ -26,7 +26,7 @@ echo "Install OrangeStarterKit"
 echo "==============================================================================="
 
 cd ~/OrangeStarterKit/
-echo " > Build Orange StarterKit"
+echo " > Build Orange StarterKit. Please wait up to 5 minutes..."
 make wp77xx &>/dev/null
 
 build_result=$?
