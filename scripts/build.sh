@@ -45,7 +45,7 @@ vmFirmwareVersion=$(cat /home/mangoh/.OrangeStarterKit_config/firmware_version)
 if [ "$boardFirmwareVersion" != "$vmFirmwareVersion" ]
     then
         echo "Firmware Update required"
-        fwupdate download /home/mangOH/.OrangeStarterKit_config/WP77_Firmware_Orange.spk 192.168.2.2
+        fwupdate download /home/mangoh/.OrangeStarterKit_config/WP77_Firmware_Orange.spk 192.168.2.2
         echo "Waiting for the mangOH Red to reboot (you may have to power-cycle it manually)"
         sleep 20
         while ! ping -c 1 -n -w 1 192.168.2.2 &> /dev/null
