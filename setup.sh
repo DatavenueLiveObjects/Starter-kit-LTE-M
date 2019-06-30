@@ -49,28 +49,28 @@ pushd /home/mangoh/legato_framework/legato &>/dev/null
 source bin/configlegatoenv &>/dev/null
 popd &>/dev/null
 
-echo ""
-echo "==============================================================================="
-echo "Check board firmware"
-echo "==============================================================================="
-legatoBoardVersion=$(ssh root@192.168.2.2 '/legato/systems/current/bin/legato version' | cut -c1-52)
-legatoVMVersion=$(cat /home/mangoh/mangOH/build/red_wp77xx/staging/version)
+#echo ""
+#echo "==============================================================================="
+#echo "Check board firmware"
+#echo "==============================================================================="
+#legatoBoardVersion=$(ssh root@192.168.2.2 '/legato/systems/current/bin/legato version' | cut -c1-52)
+#legatoVMVersion=$(cat ~OrangeStarterKit/_build_Orange/wp77xx/staging/version)
 
-if [ "$legatoBoardVersion" != "$legatoVMVersion" ]
-    then
-        echo "Update required"
-        update ~/mangOH/build/update_files/red/mangOH.wp77xx.update 192.168.2.2
-	echo "Waiting for the mangOH Red"
-	sleep 20
-	while ! ping -c 1 -n -w 1 192.168.2.2 &> /dev/null
-	do
-	    printf "%c" "."
-	done
-    else
-        echo "No update required"
-
-fi
-echo ""
+#if [ "$legatoBoardVersion" != "$legatoVMVersion" ]
+#    then
+#        echo "Update required"
+#        update ~/mangOH/build/update_files/red/mangOH.wp77xx.update 192.168.2.2
+#	echo "Waiting for the mangOH Red"
+#	sleep 20
+#	while ! ping -c 1 -n -w 1 192.168.2.2 &> /dev/null
+#	do
+#	    printf "%c" "."
+#	done
+#    else
+#        echo "No update required"
+#
+#fi
+#echo ""
 
 ./scripts/network.sh
 if [[ $? -eq 1 ]]
@@ -86,55 +86,63 @@ if [[ $? -eq 1 ]]
                 echo -e "\033[1;31mFailed to configure Live Objects, abort setup.\033[0m"
                 exit 1
 fi
-echo ""
-echo "==============================================================================="
-echo "Install mqttClient"
-echo "==============================================================================="
-cd ~/mqttClient-for-Legato/mqttClientApi/
-make clean &>/dev/null
+#echo ""
+#echo "==============================================================================="
+#echo "Install mqttClient"
+#echo "==============================================================================="
+#cd ~/mqttClient-for-Legato/mqttClientApi/
+#make clean &>/dev/null
 
-echo "Build mqttClient"
-mqtt=$(make wp77xx &>/dev/null)
+#echo "Build mqttClient"
+#mqtt=$(make wp77xx &>/dev/null)
 
-build_result=$?
+#build_result=$?
 
-if [ $build_result -eq 0 ]; then
-        echo "Upload to the mangOH red"
-        update mqttClient.wp77xx.update 192.168.2.2
-        sleep 3
-else
-        echo "==============================================================================="
-        echo -e "\033[1;31mmqttClient build failed\033[0m"
-        exit 1
+#if [ $build_result -eq 0 ]; then
+#        echo "Upload to the mangOH red"
+#        update mqttClient.wp77xx.update 192.168.2.2
+#        sleep 3
+#else
+#        echo "==============================================================================="
+#        echo -e "\033[1;31mmqttClient build failed\033[0m"
+#        exit 1
+#fi
+
+#echo ""
+#echo "==============================================================================="
+#echo "Install OrangeStarterKit"
+#echo "==============================================================================="
+
+#cd ~/OrangeStarterKit/
+#echo "Build Orange StarterKit"
+#make clean &>/dev/null
+#make wp77xx &>/dev/null
+
+#build_result=$?
+#if [ $build_result -eq 0 ] 
+#   then
+#	echo "Upload to the mangOH red"
+		#faire le controle du firmware ici
+#	update Orange.wp77xx.update 192.168.2.2
+#    else
+#    	echo "==============================================================================="
+#    	echo -e "\033[1;31mOrangeStarter kit build failed\033[0m"
+#    	exit 1
+#fi
+
+
+./scripts/build.sh
+if [[ $? -eq 1 ]]
+        then
+                echo -e "\033[1;31mBuild failed, abort setup.\033[0m"
+                exit 1
 fi
-
-echo ""
-echo "==============================================================================="
-echo "Install OrangeStarterKit"
-echo "==============================================================================="
-
-cd ~/OrangeStarterKit/
-echo "Build Orange StarterKit"
-make clean &>/dev/null
-make wp77xx &>/dev/null
-
-build_result=$?
-if [ $build_result -eq 0 ] 
-   then
-	echo "Upload to the mangOH red"
-	update OrangeStarterKit.wp77xx.update 192.168.2.2
-    else
-    	echo "==============================================================================="
-    	echo -e "\033[1;31mOrangeStarter kit build failed\033[0m"
-    	exit 1
-fi
-
 
 
 ssh root@192.168.2.2 '/sbin/reboot'
 sleep 10
 
-#check app is running
+#check if the application is running
 
 ./scripts/appStatus.sh
 if [[ $? -eq 1 ]]
