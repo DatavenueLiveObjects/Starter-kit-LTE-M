@@ -32,7 +32,7 @@ fi
 
 # check firmware
 echo " > Check board firmware"
-boardFirmwareVersion=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm info firmware' | cut -c10-20)
+boardFirmwareVersion=$(ssh root@192.168.2.2 '/legato/systems/current/bin/cm info firmware' | cut -c10-17)
 vmFirmwareVersion=$(cat /home/mangoh/.OrangeStarterKit_config/firmware_version)
 
 if [ "$boardFirmwareVersion" != "$vmFirmwareVersion" ]
