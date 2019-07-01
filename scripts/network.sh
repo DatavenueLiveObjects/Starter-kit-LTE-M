@@ -42,6 +42,18 @@ case "$MNO" in
                         APN="orange.ltem.spec"
                         auth="none"
                         ;;
+                "21403")
+                        echo "Data configuration for Orange Spain"
+                        APN="iot.nat.es"
+                        auth="pap"
+                        username="any"
+                        password="any"
+                        ;;
+                "23101")
+                        echo "Data configuration for Orange Slovakia"
+                        APN="INTERNET"
+                        auth="none"
+                        ;;
                 *)
                         echo "Unkown Network Operator"
                         echo "enter your data connection settings"

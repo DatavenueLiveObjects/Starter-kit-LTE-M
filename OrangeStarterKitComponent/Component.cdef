@@ -17,16 +17,16 @@ requires:
 	api:
 	{
 		le_mdc = modemServices/le_mdc.api 
-        le_info = modemServices/le_info.api 
-        le_adc = modemServices/le_adc.api 
-        ma_led = /home/mangoh/mangOH/apps/LedService/ma_led.api
-        le_mrc = modemServices/le_mrc.api
-        le_cfg.api
+        	le_info = modemServices/le_info.api 
+        	le_adc = modemServices/le_adc.api 
+        	ma_led = $MANGOH_ROOT/apps/LedService/ma_led.api
+        	le_mrc = modemServices/le_mrc.api
+        	le_cfg.api
 	}
 	
 	  file:
-    {
+    	{
   
-    }
+    	}
 	
 }

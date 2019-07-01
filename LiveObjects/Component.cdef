@@ -8,7 +8,6 @@ requires:
 {
     api:
     {
-        // /home/mangoh/mqttClient-for-Legato/mqttClientApi/mqttClient.api
          ../mqttClient-for-Legato/mqttClientApi/mqttClient.api
         le_data.api
     }
