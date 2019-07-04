@@ -54,6 +54,11 @@ case "$MNO" in
                         APN="INTERNET"
                         auth="none"
                         ;;
+                "20895")
+                        echo "Data configuration for Orange IoT Lab"
+                        APN="iot"
+                        auth="none"
+                        ;;
                 *)
                         echo "Unkown Network Operator"
                         echo "enter your data connection settings"
